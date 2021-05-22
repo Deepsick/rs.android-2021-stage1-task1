@@ -1,69 +1,29 @@
 package subtask3
 
-import java.util.*
-
 class StringParser {
-    val mapClosingToOpeningBracket = mutableMapOf<Char, Char>(
-        ']' to '[',
-        '>' to '<',
-        ')' to '('
-    )
-
-    fun isOpening(letter: Char): Boolean {
-        return letter == '[' || letter == '(' || letter == '<'
-    }
-
-    fun isClosing(letter: Char) = letter == ']' || letter == ')' || letter == '>'
+    private val bracketsMap = mapOf('[' to ']', '(' to ')', '<' to '>')
 
     fun getResult(inputString: String): Array<String> {
-        var result = mutableListOf<String>()
-        val stack = mutableListOf<Pair<Char, Int>>()
-        var placementsCount = 0
-        loop@ for ((index, letter) in inputString.withIndex()) {
-            if (isOpening(letter)) {
-                stack.add(letter to index)
-                continue
-            }
-            if (isClosing(letter)) {
-                if (stack.size == 0) continue@loop
-                var cursor = stack.size - 1
-                while (cursor >= 0)  {
-                    if (mapClosingToOpeningBracket[letter] == stack[cursor].first) {
-                        for (index in (cursor+1) until stack.size) {
-                            if (index < stack.size) {
-                                stack.removeAt(index)
-                            }
-                        }
+        val resultList: MutableList<String> = mutableListOf();
+        var currentString = inputString
+        while (currentString.isNotEmpty()){
+            val openChar = currentString[0]
+            if (bracketsMap.containsKey(openChar)){
+                val closeChar = bracketsMap[openChar]
+                var depth = 0
+                for ((index, value) in currentString.withIndex()){
+                    when (value){
+                        openChar -> depth++
+                        closeChar -> depth--
+                    }
+                    if (depth == 0) {
+                        resultList.add(currentString.substring(1, index))
                         break
                     }
-                    cursor--
                 }
-                if (cursor == 0 && mapClosingToOpeningBracket[letter] != stack[cursor].first) {
-                    continue@loop
-                }
-
-                if (stack.size > 1) {
-                    placementsCount = Math.max(stack.size, placementsCount)
-
-                }
-
-                val startIndex = stack.removeAt(stack.size - 1).second + 1
-                val lastIndex = index
-                val substring = inputString.slice(startIndex until lastIndex)
-                result.add(substring)
             }
-
-
-            if (stack.size == 0 && placementsCount > 0) {
-                result = (result.slice(0 until result.size - placementsCount)
-                        + result
-                    .slice(result.size - placementsCount until result.size)
-                    .reversed()
-                        ).toMutableList()
-                placementsCount = 0
-            }
+            currentString = currentString.substring(1)
         }
-
-        return result.toTypedArray()
+        return resultList.toTypedArray()
     }
 }
